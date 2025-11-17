@@ -336,7 +336,7 @@
               <MiscControls></MiscControls>
               <Define>USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>.\Start;.\User;.\Header;.\Library</IncludePath>
+              <IncludePath>.\Start;.\User;.\Header;.\Library;.\PrebuiltHeader</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -441,41 +441,6 @@
           <GroupName>Header</GroupName>
           <Files>
             <File>
-              <FileName>Delay.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Header\Delay.c</FilePath>
-            </File>
-            <File>
-              <FileName>Delay.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Header\Delay.h</FilePath>
-            </File>
-            <File>
-              <FileName>Initialization.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Header\Initialization.c</FilePath>
-            </File>
-            <File>
-              <FileName>Initialization.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Header\Initialization.h</FilePath>
-            </File>
-            <File>
-              <FileName>OLED.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Header\OLED.c</FilePath>
-            </File>
-            <File>
-              <FileName>OLED.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Header\OLED.h</FilePath>
-            </File>
-            <File>
-              <FileName>OLED_Font.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Header\OLED_Font.h</FilePath>
-            </File>
-            <File>
               <FileName>EXTI.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Header\EXTI.c</FilePath>
@@ -496,14 +461,14 @@
               <FilePath>.\Header\Menu.h</FilePath>
             </File>
             <File>
-              <FileName>Timer.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Header\Timer.h</FilePath>
-            </File>
-            <File>
               <FileName>Timer.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Header\Timer.c</FilePath>
+            </File>
+            <File>
+              <FileName>Timer.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Header\Timer.h</FilePath>
             </File>
             <File>
               <FileName>Serial.c</FileName>
@@ -534,6 +499,16 @@
               <FileName>Motor.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Header\Motor.h</FilePath>
+            </File>
+            <File>
+              <FileName>Init.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Header\Init.c</FilePath>
+            </File>
+            <File>
+              <FileName>Init.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Header\Init.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -769,6 +744,36 @@
               <FileName>stm32f10x_wwdg.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Library\stm32f10x_wwdg.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>PrebuiltHeader</GroupName>
+          <Files>
+            <File>
+              <FileName>Delay.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\PrebuiltHeader\Delay.c</FilePath>
+            </File>
+            <File>
+              <FileName>Delay.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\PrebuiltHeader\Delay.h</FilePath>
+            </File>
+            <File>
+              <FileName>OLED.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\PrebuiltHeader\OLED.c</FilePath>
+            </File>
+            <File>
+              <FileName>OLED.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\PrebuiltHeader\OLED.h</FilePath>
+            </File>
+            <File>
+              <FileName>OLED_Font.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\PrebuiltHeader\OLED_Font.h</FilePath>
             </File>
           </Files>
         </Group>

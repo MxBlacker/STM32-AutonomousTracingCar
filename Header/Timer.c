@@ -1,216 +1,312 @@
 #include "stm32f10x.h"                  // Device header
-#include "Initialization.h"
+#include "Init.h"
 #include "Button.h"
 #include "Motor.h"
 #include "Serial.h"
 #include "OLED.h"
 
-/*
-	TIMx_Init(TIMx , Period , Prescaler , TIM_MODE , channel)
-	用于自动初始化TIMx端口
-*/
+/* ==============================================================================================
+                                       枚举类型定义
+   ============================================================================================== */
 
-enum TIM_MODE{
-	IC_MODE,
-	OC_MODE,
-	ENCODER_MODE,
-	INTERRUPT_MODE
+/**
+ * @brief 定时器工作模式枚举
+ */
+enum TIM_MODE {
+    IC_MODE,            // 输入捕获模式
+    OC_MODE,            // 输出比较模式
+    ENCODER_MODE,       // 编码器模式
+    INTERRUPT_MODE      // 定时中断模式
 };
 
-void TIMx_Init(TIM_TypeDef * TIMx , uint16_t Period , uint16_t Prescaler , uint8_t mode , uint8_t channel){
-	
-	if(TIMx == TIM1)
-		RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM1, ENABLE);
-	else if (TIMx == TIM2) 
+/* ==============================================================================================
+                                       定时器初始化函数
+   ============================================================================================== */
+
+/**
+ * @brief 定时器多功能初始化函数
+ * @param TIMx 定时器指针，如TIM1、TIM2、TIM3、TIM4
+ * @param Period 自动重装载值ARR
+ * @param Prescaler 预分频器值PSC
+ * @param mode 工作模式：IC_MODE, OC_MODE, ENCODER_MODE, INTERRUPT_MODE
+ * @param channel 通道号(1-4)，某些模式下不需要此参数
+ * 
+ * @note  注意一下，如果开启了ENCODER_MODE，那么它的时基就被占用了，但是IC和OC是不会占用的，所以可以同时进行定时中断
+*		  这里的IC和OC我直接包含了定时中断的设置，避免出现上次一样的情况
+ *
+ * @example 
+ * TIMx_Init(TIM2, 1000, 72, OC_MODE, 3);     // PWM输出，通道3
+ * TIMx_Init(TIM3, 65535, 1, ENCODER_MODE, 0); // 编码器模式
+ * TIMx_Init(TIM2, 100, 720, INTERRUPT_MODE, 0); // 纯定时中断
+ */
+void TIMx_Init(TIM_TypeDef *TIMx, uint16_t Period, uint16_t Prescaler, uint8_t mode, uint8_t channel)
+{
+    /* ======================================================================
+                               Step 1: 时钟使能
+       ====================================================================== */
+    
+    // 根据定时器类型使能对应的时钟
+    if (TIMx == TIM1) {
+        RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM1, ENABLE);
+    } else if (TIMx == TIM2) {
         RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
-    else if (TIMx == TIM3) 
+    } else if (TIMx == TIM3) {
         RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);
-    else if (TIMx == TIM4) 
+    } else if (TIMx == TIM4) {
         RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE);
-	
-	//时基和时钟无论如何都要开启的
-	TIM_InternalClockConfig(TIMx);
-	
-	TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure;
-	TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;
-	TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;
-	TIM_TimeBaseInitStructure.TIM_Period = Period - 1;
-	TIM_TimeBaseInitStructure.TIM_Prescaler = Prescaler - 1;	
-	TIM_TimeBaseInitStructure.TIM_RepetitionCounter = 0;
-	
-	TIM_TimeBaseInit(TIMx , &TIM_TimeBaseInitStructure);
-	
-	switch(mode){
-		case IC_MODE:
-			
-			//不用就暂时不写了，累死我了
-			break;
-		
-		case OC_MODE:
-			{
-			//OC_MODE和IC_MODE理应来讲时可以覆盖在INTERRUPT_MODE上的
-			//TImx_Init(TIM2 , 1000 , 72 , OC_MODE , 3);
-			//TImx_Init(TIM2 , 1000 , 72 , OC_MODE , 4);
-			
-			AutoInitGPIO(GPIOA , GPIO_Mode_AF_PP , GPIO_Pin_2 , GPIO_Speed_50MHz);
-			AutoInitGPIO(GPIOA , GPIO_Mode_AF_PP , GPIO_Pin_3 , GPIO_Speed_50MHz);
-				
-			TIM_OCInitTypeDef TIM_OCInitStructure;
-			TIM_OCStructInit(&TIM_OCInitStructure); //因为有很多通用计时器用不到的，所以这里都给个默认值，不然值不确定
-			TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1; //输出比较模式
-			TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;
-			TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
-			TIM_OCInitStructure.TIM_Pulse = 0; //设置CCR (16位) 的值
-		
-            switch(channel) {
-				case 1: TIM_OC1Init(TIMx, &TIM_OCInitStructure); break;
-                case 2: TIM_OC2Init(TIMx, &TIM_OCInitStructure); break;
-                case 3: TIM_OC3Init(TIMx, &TIM_OCInitStructure); break;
-                case 4: TIM_OC4Init(TIMx, &TIM_OCInitStructure); break;
-			}
-			break;
-			
-			}
-		case ENCODER_MODE:
-			{
-			//TIMx_Init(TIM3 , 65535 , 1 , ENCODER_MODE) 
-			//TIMx_Init(TIM4 , 65535 , 1 , ENCODER_MODE) 	
-		
-			if(TIMx == TIM2){
-				AutoInitGPIO(GPIOA , GPIO_Mode_IPU , GPIO_Pin_0 , GPIO_Speed_50MHz);
-				AutoInitGPIO(GPIOA , GPIO_Mode_IPU , GPIO_Pin_1 , GPIO_Speed_50MHz);
-			}else if(TIMx == TIM3){
-				AutoInitGPIO(GPIOA , GPIO_Mode_IPU , GPIO_Pin_6 , GPIO_Speed_50MHz);
-				AutoInitGPIO(GPIOA , GPIO_Mode_IPU , GPIO_Pin_7 , GPIO_Speed_50MHz);
-			}else if(TIMx == TIM4){
-				AutoInitGPIO(GPIOB , GPIO_Mode_IPU , GPIO_Pin_6 , GPIO_Speed_50MHz);
-				AutoInitGPIO(GPIOB , GPIO_Mode_IPU , GPIO_Pin_7 , GPIO_Speed_50MHz);
-			}
-	
-			TIM_ICInitTypeDef TIM_ICInitStructure;
-			TIM_ICStructInit(&TIM_ICInitStructure); //编码器模式不需要全部配置，后面那些分频器啥的就不用配置了
-			TIM_ICInitStructure.TIM_Channel = TIM_Channel_1; //CH1
-			TIM_ICInitStructure.TIM_ICFilter = 0xF;
-			TIM_ICInitStructure.TIM_ICPolarity = TIM_ICPolarity_Rising;
-			TIM_ICInit(TIMx , &TIM_ICInitStructure);
-
-			TIM_ICStructInit(&TIM_ICInitStructure); //配置Channel和2，两个都要去到编码器
-			TIM_ICInitStructure.TIM_Channel = TIM_Channel_2; //CH2
-			TIM_ICInitStructure.TIM_ICFilter = 0xF;
-			TIM_ICInitStructure.TIM_ICPolarity = TIM_ICPolarity_Rising;
-			TIM_ICInit(TIMx , &TIM_ICInitStructure);
-
-			TIM_EncoderInterfaceConfig(TIMx , TIM_EncoderMode_TI12 , TIM_ICPolarity_Rising , TIM_ICPolarity_Rising);
-			
-			IRQn_Type IRQn;
-			if (TIMx == TIM3) 
-				IRQn = TIM3_IRQn;
-			else if (TIMx == TIM4) 
-				IRQn = TIM4_IRQn;
-			
-			NVIC_InitTypeDef NVIC_InitStructure;
-			NVIC_InitStructure.NVIC_IRQChannel = IRQn;
-			NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
-			NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
-			NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-			NVIC_Init(&NVIC_InitStructure);
-			
-			break;
-			}
-		case INTERRUPT_MODE:
-			{
-			//TIMx_Init(TIM2 , 100 , 720 , INTERRUPT_MODE)
-		
-			TIM_ClearITPendingBit(TIMx , TIM_IT_Update);
-			TIM_ITConfig(TIMx , TIM_IT_Update,ENABLE); //开启中断输出控制
-
-			IRQn_Type IRQn;
-			if (TIMx == TIM1) 
-				IRQn = TIM1_CC_IRQn;
-			else if (TIMx == TIM2) 
-				IRQn = TIM2_IRQn;
-			else if (TIMx == TIM3) 
-				IRQn = TIM3_IRQn;
-			else if (TIMx == TIM4) 
-				IRQn = TIM4_IRQn;
-			
-			AutoInitNVIC(NVIC_PriorityGroup_2 , IRQn , 2 , 2);
-			break;
-			}
-	}
-	
-	TIM_Cmd(TIMx , ENABLE);
+    }
+    
+    /* ======================================================================
+                               Step 2: 时基初始化
+       ====================================================================== */
+    
+    // 配置定时器使用内部时钟
+    TIM_InternalClockConfig(TIMx);
+    
+    TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure;
+    TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;      // 时钟分频
+    TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;  // 向上计数模式
+    TIM_TimeBaseInitStructure.TIM_Period = Period - 1;               // 自动重装载值ARR
+    TIM_TimeBaseInitStructure.TIM_Prescaler = Prescaler - 1;         // 预分频器PSC
+    TIM_TimeBaseInitStructure.TIM_RepetitionCounter = 0;             // 重复计数(高级定时器)
+    
+    TIM_TimeBaseInit(TIMx, &TIM_TimeBaseInitStructure);
+    
+    /* ======================================================================
+                               Step 3: 模式配置
+       ====================================================================== */
+    
+    switch (mode) {
+        case IC_MODE:
+            /* ==============================
+                    输入捕获模式配置
+               ============================== */
+            {
+                // 配置GPIO为输入模式
+                if (TIMx == TIM2) {
+                    switch (channel) {
+                        case 1: AutoInitGPIO(GPIOA, GPIO_Mode_IPU, GPIO_Pin_0, GPIO_Speed_50MHz); break;
+                        case 2: AutoInitGPIO(GPIOA, GPIO_Mode_IPU, GPIO_Pin_1, GPIO_Speed_50MHz); break;
+                        case 3: AutoInitGPIO(GPIOA, GPIO_Mode_IPU, GPIO_Pin_2, GPIO_Speed_50MHz); break;
+                        case 4: AutoInitGPIO(GPIOA, GPIO_Mode_IPU, GPIO_Pin_3, GPIO_Speed_50MHz); break;
+                    }
+                } else if (TIMx == TIM3) {
+                    switch (channel) {
+                        case 1: AutoInitGPIO(GPIOA, GPIO_Mode_IPU, GPIO_Pin_6, GPIO_Speed_50MHz); break;
+                        case 2: AutoInitGPIO(GPIOA, GPIO_Mode_IPU, GPIO_Pin_7, GPIO_Speed_50MHz); break;
+                        case 3: AutoInitGPIO(GPIOB, GPIO_Mode_IPU, GPIO_Pin_0, GPIO_Speed_50MHz); break;
+                        case 4: AutoInitGPIO(GPIOB, GPIO_Mode_IPU, GPIO_Pin_1, GPIO_Speed_50MHz); break;
+                    }
+                } else if (TIMx == TIM4) {
+                    switch (channel) {
+                        case 1: AutoInitGPIO(GPIOB, GPIO_Mode_IPU, GPIO_Pin_6, GPIO_Speed_50MHz); break;
+                        case 2: AutoInitGPIO(GPIOB, GPIO_Mode_IPU, GPIO_Pin_7, GPIO_Speed_50MHz); break;
+                        case 3: AutoInitGPIO(GPIOB, GPIO_Mode_IPU, GPIO_Pin_8, GPIO_Speed_50MHz); break;
+                        case 4: AutoInitGPIO(GPIOB, GPIO_Mode_IPU, GPIO_Pin_9, GPIO_Speed_50MHz); break;
+                    }
+                }
+                
+                // 输入捕获参数配置
+                TIM_ICInitTypeDef TIM_ICInitStructure;
+                TIM_ICStructInit(&TIM_ICInitStructure);  // 初始化为默认值
+                
+                TIM_ICInitStructure.TIM_Channel = (channel == 1) ? TIM_Channel_1 : 
+                                                 (channel == 2) ? TIM_Channel_2 : 
+                                                 (channel == 3) ? TIM_Channel_3 : TIM_Channel_4;
+                TIM_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV1;    // 输入捕获预分频
+                TIM_ICInitStructure.TIM_ICFilter = 0x0F;                 // 输入滤波器(0-0xF)
+                TIM_ICInitStructure.TIM_ICPolarity = TIM_ICPolarity_Rising; // 捕获极性：上升沿
+                TIM_ICInitStructure.TIM_ICSelection = TIM_ICSelection_DirectTI; // 直接模式
+                
+                TIM_ICInit(TIMx, &TIM_ICInitStructure);
+                
+                // 使能捕获中断
+                TIM_ITConfig(TIMx, (channel == 1) ? TIM_IT_CC1 : 
+                                   (channel == 2) ? TIM_IT_CC2 : 
+                                   (channel == 3) ? TIM_IT_CC3 : TIM_IT_CC4, ENABLE);
+                
+                // 配置NVIC中断
+                IRQn_Type IRQn;
+                if (TIMx == TIM1) IRQn = TIM1_CC_IRQn;
+                else if (TIMx == TIM2) IRQn = TIM2_IRQn;
+                else if (TIMx == TIM3) IRQn = TIM3_IRQn;
+                else if (TIMx == TIM4) IRQn = TIM4_IRQn;
+                
+                AutoInitNVIC(NVIC_PriorityGroup_2, IRQn, 1, 1);
+            }
+            break;
+            
+        case OC_MODE:
+            /* ==============================
+                    输出比较模式配置
+               ============================== */
+            {
+                // 配置GPIO为复用推挽输出
+                if (TIMx == TIM2) {
+                    switch (channel) {
+                        case 1: AutoInitGPIO(GPIOA, GPIO_Mode_AF_PP, GPIO_Pin_0, GPIO_Speed_50MHz); break;
+                        case 2: AutoInitGPIO(GPIOA, GPIO_Mode_AF_PP, GPIO_Pin_1, GPIO_Speed_50MHz); break;
+                        case 3: AutoInitGPIO(GPIOA, GPIO_Mode_AF_PP, GPIO_Pin_2, GPIO_Speed_50MHz); break;
+                        case 4: AutoInitGPIO(GPIOA, GPIO_Mode_AF_PP, GPIO_Pin_3, GPIO_Speed_50MHz); break;
+                    }
+                } else if (TIMx == TIM3) {
+                    switch (channel) {
+                        case 1: AutoInitGPIO(GPIOA, GPIO_Mode_AF_PP, GPIO_Pin_6, GPIO_Speed_50MHz); break;
+                        case 2: AutoInitGPIO(GPIOA, GPIO_Mode_AF_PP, GPIO_Pin_7, GPIO_Speed_50MHz); break;
+                        case 3: AutoInitGPIO(GPIOB, GPIO_Mode_AF_PP, GPIO_Pin_0, GPIO_Speed_50MHz); break;
+                        case 4: AutoInitGPIO(GPIOB, GPIO_Mode_AF_PP, GPIO_Pin_1, GPIO_Speed_50MHz); break;
+                    }
+                }
+                
+                // 输出比较参数配置
+                TIM_OCInitTypeDef TIM_OCInitStructure;
+                TIM_OCStructInit(&TIM_OCInitStructure);  // 初始化为默认值
+                
+                TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;        // PWM模式1
+                TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High; // 输出极性高
+                TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable; // 使能输出
+                TIM_OCInitStructure.TIM_Pulse = 0;                       // 初始CCR值
+                
+                // 根据通道初始化对应的输出比较单元
+                switch (channel) {
+                    case 1: TIM_OC1Init(TIMx, &TIM_OCInitStructure); break;
+                    case 2: TIM_OC2Init(TIMx, &TIM_OCInitStructure); break;
+                    case 3: TIM_OC3Init(TIMx, &TIM_OCInitStructure); break;
+                    case 4: TIM_OC4Init(TIMx, &TIM_OCInitStructure); break;
+                }
+            }
+            break;
+            
+        case ENCODER_MODE:
+            /* ==============================
+                    编码器模式配置
+               ============================== */
+            {
+                // 配置编码器GPIO引脚
+                if (TIMx == TIM2) {
+                    AutoInitGPIO(GPIOA, GPIO_Mode_IPU, GPIO_Pin_0, GPIO_Speed_50MHz);  // TIM2_CH1
+                    AutoInitGPIO(GPIOA, GPIO_Mode_IPU, GPIO_Pin_1, GPIO_Speed_50MHz);  // TIM2_CH2
+                } else if (TIMx == TIM3) {
+                    AutoInitGPIO(GPIOA, GPIO_Mode_IPU, GPIO_Pin_6, GPIO_Speed_50MHz);  // TIM3_CH1
+                    AutoInitGPIO(GPIOA, GPIO_Mode_IPU, GPIO_Pin_7, GPIO_Speed_50MHz);  // TIM3_CH2
+                } else if (TIMx == TIM4) {
+                    AutoInitGPIO(GPIOB, GPIO_Mode_IPU, GPIO_Pin_6, GPIO_Speed_50MHz);  // TIM4_CH1
+                    AutoInitGPIO(GPIOB, GPIO_Mode_IPU, GPIO_Pin_7, GPIO_Speed_50MHz);  // TIM4_CH2
+                }
+                
+                // 配置通道1为输入捕获
+                TIM_ICInitTypeDef TIM_ICInitStructure;
+                TIM_ICStructInit(&TIM_ICInitStructure);
+                
+                TIM_ICInitStructure.TIM_Channel = TIM_Channel_1;     // 通道1
+                TIM_ICInitStructure.TIM_ICFilter = 0xF;              // 滤波器
+                TIM_ICInitStructure.TIM_ICPolarity = TIM_ICPolarity_Rising; // 极性
+                TIM_ICInit(TIMx, &TIM_ICInitStructure);
+                
+                // 配置通道2为输入捕获
+                TIM_ICStructInit(&TIM_ICInitStructure);
+                TIM_ICInitStructure.TIM_Channel = TIM_Channel_2;     // 通道2
+                TIM_ICInitStructure.TIM_ICFilter = 0xF;              // 滤波器
+                TIM_ICInitStructure.TIM_ICPolarity = TIM_ICPolarity_Rising; // 极性
+                TIM_ICInit(TIMx, &TIM_ICInitStructure);
+                
+                // 配置编码器接口模式
+                TIM_EncoderInterfaceConfig(TIMx, TIM_EncoderMode_TI12, TIM_ICPolarity_Rising, TIM_ICPolarity_Rising);
+                
+                // 配置编码器中断
+                IRQn_Type IRQn;
+                if (TIMx == TIM3) {
+                    IRQn = TIM3_IRQn;
+                } else if (TIMx == TIM4) {
+                    IRQn = TIM4_IRQn;
+                }
+                
+                NVIC_InitTypeDef NVIC_InitStructure;
+                NVIC_InitStructure.NVIC_IRQChannel = IRQn;
+                NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+                NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+                NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+                NVIC_Init(&NVIC_InitStructure);
+            }
+            break;
+            
+        case INTERRUPT_MODE:
+            /* ==============================
+                    定时中断模式配置
+               ============================== */
+            {
+                // 清除更新中断标志
+                TIM_ClearITPendingBit(TIMx, TIM_IT_Update);
+                // 使能更新中断
+                TIM_ITConfig(TIMx, TIM_IT_Update, ENABLE);
+                
+                // 配置NVIC中断
+                IRQn_Type IRQn;
+                if (TIMx == TIM1) {
+                    IRQn = TIM1_UP_IRQn;
+                } else if (TIMx == TIM2) {
+                    IRQn = TIM2_IRQn;
+                } else if (TIMx == TIM3) {
+                    IRQn = TIM3_IRQn;
+                } else if (TIMx == TIM4) {
+                    IRQn = TIM4_IRQn;
+                }
+                
+                AutoInitNVIC(NVIC_PriorityGroup_2, IRQn, 2, 2);
+            }
+            break;
+    }
+    
+    /* ======================================================================
+                               Step 4: 使能定时器
+       ====================================================================== */
+    
+    TIM_Cmd(TIMx, ENABLE);
+    
+    // 如果是高级定时器(TIM1)，还需要使能主输出
+    if (TIMx == TIM1) {
+        TIM_CtrlPWMOutputs(TIM1, ENABLE);
+    }
 }
 
-/*
-	Set_OC_value(TIMx , channel , CCR_value);
-	其实是设置电机速度的
-*/
+/* ==============================================================================================
+                                       输出比较值设置函数
+   ============================================================================================== */
 
-void Set_OC_value(TIM_TypeDef * TIMx ,uint8_t channel , int CCR_value){
-	
-	switch(channel){
-		case 1: TIM_SetCompare1(TIMx , CCR_value); break;
-		case 2: TIM_SetCompare2(TIMx , CCR_value); break;
-		case 3: TIM_SetCompare3(TIMx , CCR_value); break;
-		case 4: TIM_SetCompare4(TIMx , CCR_value); break; 
-	}
-	
+/**
+ * @brief 设置输出比较值(CCR)
+ * @param TIMx 定时器指针
+ * @param channel 通道号(1-4)
+ * @param CCR_value 比较值，决定PWM占空比
+ * 
+ * @note 主要用于设置电机速度、LED亮度等PWM控制
+ */
+
+void Set_OC_value(TIM_TypeDef *TIMx, uint8_t channel, int CCR_value)
+{
+    switch (channel) {
+        case 1: TIM_SetCompare1(TIMx, CCR_value); break;
+        case 2: TIM_SetCompare2(TIMx, CCR_value); break;
+        case 3: TIM_SetCompare3(TIMx, CCR_value); break;
+        case 4: TIM_SetCompare4(TIMx, CCR_value); break;
+    }
 }
 
-/*
-	以下为中断函数
-*/
+/* ==============================================================================================
+                                       中断服务函数
+   ============================================================================================== */
 
-uint8_t Freq_Counter = 0;
-extern int TASK_MODE;
-
-MotorTypeDef Left_Motor,Right_Motor;
-PIDTypeDef Left_PID,Right_PID;
-
-void TIM2_IRQHandler(void){
-	if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET)
-    {
-		Freq_Counter++;
-		Button_Check(GPIOA , GPIO_Pin_0 , 0);
-		
-		if(TASK_MODE == 0){																				//TASK1	
-			
-			Left_Motor.Counter++;
-			Set_Right_Motor_Speed(0);
-			
-			if(Left_Motor.Counter >= 10){
-				
-				Cal_Current_Speed(&Left_Motor , TIM3);													//看看左电机多块
-				
-				float Delta_Speed = PID_Control(&Left_Motor , &Left_PID);								//如果和目标速度一样就维持，不一样就想想要往哪边动，动多少
-				Set_Left_Motor_Speed(Left_Motor.Target_Speed + Delta_Speed);							//和Target_Speed的偏差主要是为了补偿阻力！
-				
-				//Serial_Printf("Current: %d Delta: %.1f",(int)Left_Motor.Cur_Speed, Delta_Speed);
-				
-				Left_Motor.Counter = 0;	
-			}
-			
-		}else{																							//TASK2
-			
-			Right_Motor.Counter++;
-			Set_Left_Motor_Speed(0);
-			
-			if(Right_Motor.Counter >= 10){
-				
-				Cal_Current_Speed(&Left_Motor , TIM3);
-				Cal_Current_Speed(&Right_Motor , TIM4);
-			
-				Motor_Set_Target_Speed(&Right_Motor , Left_Motor.Cur_Speed);							//同上
-				float Delta_Speed = PID_Control(&Right_Motor , &Right_PID);
-				Set_Right_Motor_Speed(Right_Motor.Target_Speed + Delta_Speed);
-			
-				Serial_Printf("LC: %d RC: %d\r\n",(int)Left_Motor.Cur_Speed, (int)Right_Motor.Cur_Speed);
-				
-				Right_Motor.Counter = 0;	
-			}
-		}
-		
-		TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
+/**
+ * @brief TIM2中断服务函数
+ * @note 需要根据实际应用添加具体的中断处理逻辑
+ */
+void TIM2_IRQHandler(void)
+{
+    if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET) {
+        // 添加定时中断处理逻辑
+        // 例如：定时任务、状态更新等
+        
+        // 清除中断标志位
+        TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
     }
 }

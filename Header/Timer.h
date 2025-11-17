@@ -1,7 +1,7 @@
 
-/*
-	这个头文件主要是TIM的初始化和TIM中断函数
-*/
+/**
+ *	@brief TIM的初始化和TIM的功能设置
+ */
 
 #ifndef __TIMER_FUCK
 #define __TIMER_FUCK
