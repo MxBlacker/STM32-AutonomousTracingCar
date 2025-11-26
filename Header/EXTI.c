@@ -19,11 +19,11 @@
  * @param SubPriority 子优先级
  * 
  * @example 
- * AutoInitEXTI(GPIOB, GPIO_Mode_IPU, GPIO_Pin_14, GPIO_Speed_50MHz, 
+ * EXTI_Init(GPIOB, GPIO_Mode_IPU, GPIO_Pin_14, GPIO_Speed_50MHz, 
  *              EXTI_Mode_Interrupt, EXTI_Trigger_Falling, 
  *              NVIC_PriorityGroup_2, EXTI15_10_IRQn, 1, 1);
  */
-void AutoInitEXTI(GPIO_TypeDef* GPIOx, GPIOMode_TypeDef Mode, uint16_t Pin, 
+void EXTIx_Init(GPIO_TypeDef* GPIOx, GPIOMode_TypeDef Mode, uint16_t Pin, 
                   GPIOSpeed_TypeDef Speed, EXTIMode_TypeDef InterruptMode, 
                   EXTITrigger_TypeDef TriggerMode, uint32_t NVIC_PriorityGroup_x, 
                   uint8_t IRQChannel, uint8_t PreemptionPriority, uint8_t SubPriority)
@@ -36,7 +36,7 @@ void AutoInitEXTI(GPIO_TypeDef* GPIOx, GPIOMode_TypeDef Mode, uint16_t Pin,
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
     
     // 调用自动化GPIO初始化函数配置引脚
-    AutoInitGPIO(GPIOx, Mode, Pin, Speed);
+    GPIOx_Init(GPIOx, Mode, Pin, Speed);
     
     /* ======================================================================
                        Step 2: GPIO端口源映射配置

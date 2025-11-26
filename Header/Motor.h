@@ -76,5 +76,6 @@ float PID_Control(MotorTypeDef *Motor, PIDTypeDef *PID);
  * @param Speed 速度值(正负表示方向)
  */
 void Set_Motor_Speed(uint8_t isLeftMotor, float Speed);
+void Set_Car_Speed(float Speed_1, float Speed_2);
 
 #endif

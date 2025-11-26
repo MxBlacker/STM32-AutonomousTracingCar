@@ -45,9 +45,9 @@ void USART1_Serial_Init(void)
        ====================================================================== */
     
     // PA9: USART1_TX - 复用推挽输出
-    AutoInitGPIO(GPIOA, GPIO_Mode_AF_PP, GPIO_Pin_9, GPIO_Speed_50MHz);
+    GPIOx_Init(GPIOA, GPIO_Mode_AF_PP, GPIO_Pin_9, GPIO_Speed_50MHz);
     // PA10: USART1_RX - 上拉输入
-    AutoInitGPIO(GPIOA, GPIO_Mode_IPU, GPIO_Pin_10, GPIO_Speed_50MHz);
+    GPIOx_Init(GPIOA, GPIO_Mode_IPU, GPIO_Pin_10, GPIO_Speed_50MHz);
 
     /* ======================================================================
                                Step 3: USART参数配置

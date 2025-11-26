@@ -17,12 +17,12 @@
  * 
  * @example 
  * // 初始化PA1为上拉输入，50MHz速度
- * AutoInitGPIO(GPIOA, GPIO_Mode_IPU, GPIO_Pin_1, GPIO_Speed_50MHz);
+ * GPIOx_Init(GPIOA, GPIO_Mode_IPU, GPIO_Pin_1, GPIO_Speed_50MHz);
  * 
  * // 初始化PB5、PB6为推挽输出，50MHz速度  
- * AutoInitGPIO(GPIOB, GPIO_Mode_Out_PP, GPIO_Pin_5 | GPIO_Pin_6, GPIO_Speed_50MHz);
+ * GPIOx_Init(GPIOB, GPIO_Mode_Out_PP, GPIO_Pin_5 | GPIO_Pin_6, GPIO_Speed_50MHz);
  */
-void AutoInitGPIO(GPIO_TypeDef* GPIOx, GPIOMode_TypeDef Mode, uint16_t Pin, GPIOSpeed_TypeDef Speed)
+void GPIOx_Init(GPIO_TypeDef* GPIOx, GPIOMode_TypeDef Mode, uint16_t Pin, GPIOSpeed_TypeDef Speed)
 {
     // 参数有效性检查
     if (GPIOx == NULL) return;
@@ -119,14 +119,14 @@ void AutoInitNVIC(uint32_t NVIC_PriorityGroup_x, uint8_t IRQChannel,
 /*
 // GPIO配置示例:
 // 1. LED输出配置
-AutoInitGPIO(GPIOB, GPIO_Mode_Out_PP, GPIO_Pin_0, GPIO_Speed_50MHz);
+GPIOx_Init(GPIOB, GPIO_Mode_Out_PP, GPIO_Pin_0, GPIO_Speed_50MHz);
 
 // 2. 按键输入配置  
-AutoInitGPIO(GPIOA, GPIO_Mode_IPU, GPIO_Pin_0, GPIO_Speed_50MHz);
+GPIOx_Init(GPIOA, GPIO_Mode_IPU, GPIO_Pin_0, GPIO_Speed_50MHz);
 
 // 3. USART引脚配置
-AutoInitGPIO(GPIOA, GPIO_Mode_AF_PP, GPIO_Pin_9, GPIO_Speed_50MHz);  // TX
-AutoInitGPIO(GPIOA, GPIO_Mode_IPU, GPIO_Pin_10, GPIO_Speed_50MHz);   // RX
+GPIOx_Init(GPIOA, GPIO_Mode_AF_PP, GPIO_Pin_9, GPIO_Speed_50MHz);  // TX
+GPIOx_Init(GPIOA, GPIO_Mode_IPU, GPIO_Pin_10, GPIO_Speed_50MHz);   // RX
 
 // NVIC配置示例:
 // 1. 串口中断配置

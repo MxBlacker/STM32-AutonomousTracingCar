@@ -5,7 +5,7 @@
 #ifndef __EXTI_H_MXB
 #define __EXTI_H_MXB
 
-void AutoInitEXTI(GPIO_TypeDef* GPIOx, GPIOMode_TypeDef Mode, uint16_t Pin, 
+void EXTIx_Init(GPIO_TypeDef* GPIOx, GPIOMode_TypeDef Mode, uint16_t Pin, 
                   GPIOSpeed_TypeDef Speed, EXTIMode_TypeDef InterruptMode, 
                   EXTITrigger_TypeDef TriggerMode, uint32_t NVIC_PriorityGroup_x, 
                   uint8_t IRQChannel, uint8_t PreemptionPriority, uint8_t SubPriority);

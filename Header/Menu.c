@@ -22,11 +22,9 @@ enum option_mode {
  */
 enum interface_id {
     MENU_MAIN,      // 0 - 主菜单
-    MENU_LED,       // 1 - LED控制菜单
+    MENU_SPEED,     // 1 - SPEED
     MENU_PID,       // 2 - PID菜单
-    MENU_IMAGE,     // 3 - 图像菜单
-    MENU_ANGLE,     // 4 - 角度菜单
-    NONE_INTERFACE  // 5 - 无界面
+	NONE_INTERFACE,
 };
 
 /**
@@ -79,74 +77,18 @@ typedef struct {
  */
 Interface_TypeDef interface[100] = {
     [0] = {    // 主菜单界面
-        .option_count = 4,
-        .option_text = {"LED Control", "PID", "Image", "Angle"},
-        .option_mode = {SUBINTERFACE, SUBINTERFACE, SUBINTERFACE, SUBINTERFACE},
-        .option_value = {-1, -1, -1, -1},
-        .value_range = {-1, -1, -1, -1},
-        .value_mode = NAN_MODE,
-        .value_length = -1,
-        .super_interface = MENU_MAIN,
-        .subinterface = {MENU_LED, MENU_PID, MENU_IMAGE, MENU_ANGLE},
-        .allow_edit = 0,
-        .allow_title = 0,
-        .title = " "
-    },
-    [1] = {    // LED控制界面
         .option_count = 2,
-        .option_text = {"LED_speed", "LED_dir", " ", " "},
+        .option_text = {"Boot", "Speed", "", ""},
         .option_mode = {EDITABLE, EDITABLE, NONE_MODE, NONE_MODE},
         .option_value = {0, 0, -1, -1},
-        .value_range = {2, 1, -1, -1},
+        .value_range = {1, 9, -1, -1},
         .value_mode = INTEGER,
         .value_length = 1,
         .super_interface = MENU_MAIN,
         .subinterface = {NONE_INTERFACE, NONE_INTERFACE, NONE_INTERFACE, NONE_INTERFACE},
         .allow_edit = 1,
-        .allow_title = 1,
-        .title = "LED Control"
-    },
-    [2] = {    // PID参数界面
-        .option_count = 3,
-        .option_text = {"kp", "ki", "kd", " "},
-        .option_mode = {EDITABLE, EDITABLE, EDITABLE, NONE_MODE},
-        .option_value = {0, 0, 0, -1},
-        .value_range = {100, 100, 100, -1},
-        .value_mode = FRACTION,        // 小数用十进制模拟
-        .value_length = -1,            // 小数特殊处理
-        .super_interface = MENU_MAIN,
-        .subinterface = {NONE_INTERFACE, NONE_INTERFACE, NONE_INTERFACE, NONE_INTERFACE},
-        .allow_edit = 1,
-        .allow_title = 1,
-        .title = "PID"
-    },
-    [3] = {    // 图像界面
-        .option_count = 1,
-        .option_text = {"Image", " ", " ", " "},
-        .option_mode = {INTERACTIBLE, NONE_MODE, NONE_MODE, NONE_MODE},
-        .option_value = {-1, -1, -1, -1},
-        .value_range = {-1, 1, -1, -1},
-        .value_mode = NAN_MODE,
-        .value_length = -1,
-        .super_interface = MENU_MAIN,
-        .subinterface = {NONE_INTERFACE, NONE_INTERFACE, NONE_INTERFACE, NONE_INTERFACE},
-        .allow_edit = 0,
-        .allow_title = 1,
-        .title = "Image"
-    },
-    [4] = {    // 角度界面
-        .option_count = 1,
-        .option_text = {"Angle", " ", " ", " "},
-        .option_mode = {INTERACTIBLE, NONE_MODE, NONE_MODE, NONE_MODE},
-        .option_value = {-1, -1, -1, -1},
-        .value_range = {-1, 1, -1, -1},
-        .value_mode = NAN_MODE,
-        .value_length = -1,
-        .super_interface = MENU_MAIN,
-        .subinterface = {NONE_INTERFACE, NONE_INTERFACE, NONE_INTERFACE, NONE_INTERFACE},
-        .allow_edit = 0,
-        .allow_title = 1,
-        .title = "Angle"
+        .allow_title = 0,
+        .title = " "
     },
 };
 
@@ -336,6 +278,23 @@ void confirm(void) {
     } else if (selection_mode == INTERACTIBLE) {
         // 执行交互功能（待扩展）
     }
+}
+
+
+/**
+ * @brief 返回操作
+ * @note 退出编辑模式或返回上级菜单
+ */
+void temp_boot_switch(void){
+    interface[current_interface].option_value[0] = (interface[current_interface].option_value[0] + 1) % interface[current_interface].value_range[0];
+}
+
+/**
+ * @brief 返回操作
+ * @note 退出编辑模式或返回上级菜单
+ */
+void temp_speed_switch(void){
+    interface[current_interface].option_value[1] = (interface[current_interface].option_value[0] + 1) % interface[current_interface].value_range[1];
 }
 
 /**

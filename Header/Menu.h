@@ -29,4 +29,7 @@ void down(void);
 void confirm(void);
 void backward(void);
 
+void temp_boot_switch(void);
+void temp_speed_switch(void);
+
 #endif

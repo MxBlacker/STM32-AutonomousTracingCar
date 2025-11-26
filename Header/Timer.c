@@ -4,6 +4,7 @@
 #include "Motor.h"
 #include "Serial.h"
 #include "OLED.h"
+#include "Sensor.h"
 
 /* ==============================================================================================
                                        枚举类型定义
@@ -85,24 +86,24 @@ void TIMx_Init(TIM_TypeDef *TIMx, uint16_t Period, uint16_t Prescaler, uint8_t m
                 // 配置GPIO为输入模式
                 if (TIMx == TIM2) {
                     switch (channel) {
-                        case 1: AutoInitGPIO(GPIOA, GPIO_Mode_IPU, GPIO_Pin_0, GPIO_Speed_50MHz); break;
-                        case 2: AutoInitGPIO(GPIOA, GPIO_Mode_IPU, GPIO_Pin_1, GPIO_Speed_50MHz); break;
-                        case 3: AutoInitGPIO(GPIOA, GPIO_Mode_IPU, GPIO_Pin_2, GPIO_Speed_50MHz); break;
-                        case 4: AutoInitGPIO(GPIOA, GPIO_Mode_IPU, GPIO_Pin_3, GPIO_Speed_50MHz); break;
+                        case 1: GPIOx_Init(GPIOA, GPIO_Mode_IPU, GPIO_Pin_0, GPIO_Speed_50MHz); break;
+                        case 2: GPIOx_Init(GPIOA, GPIO_Mode_IPU, GPIO_Pin_1, GPIO_Speed_50MHz); break;
+                        case 3: GPIOx_Init(GPIOA, GPIO_Mode_IPU, GPIO_Pin_2, GPIO_Speed_50MHz); break;
+                        case 4: GPIOx_Init(GPIOA, GPIO_Mode_IPU, GPIO_Pin_3, GPIO_Speed_50MHz); break;
                     }
                 } else if (TIMx == TIM3) {
                     switch (channel) {
-                        case 1: AutoInitGPIO(GPIOA, GPIO_Mode_IPU, GPIO_Pin_6, GPIO_Speed_50MHz); break;
-                        case 2: AutoInitGPIO(GPIOA, GPIO_Mode_IPU, GPIO_Pin_7, GPIO_Speed_50MHz); break;
-                        case 3: AutoInitGPIO(GPIOB, GPIO_Mode_IPU, GPIO_Pin_0, GPIO_Speed_50MHz); break;
-                        case 4: AutoInitGPIO(GPIOB, GPIO_Mode_IPU, GPIO_Pin_1, GPIO_Speed_50MHz); break;
+                        case 1: GPIOx_Init(GPIOA, GPIO_Mode_IPU, GPIO_Pin_6, GPIO_Speed_50MHz); break;
+                        case 2: GPIOx_Init(GPIOA, GPIO_Mode_IPU, GPIO_Pin_7, GPIO_Speed_50MHz); break;
+                        case 3: GPIOx_Init(GPIOB, GPIO_Mode_IPU, GPIO_Pin_0, GPIO_Speed_50MHz); break;
+                        case 4: GPIOx_Init(GPIOB, GPIO_Mode_IPU, GPIO_Pin_1, GPIO_Speed_50MHz); break;
                     }
                 } else if (TIMx == TIM4) {
                     switch (channel) {
-                        case 1: AutoInitGPIO(GPIOB, GPIO_Mode_IPU, GPIO_Pin_6, GPIO_Speed_50MHz); break;
-                        case 2: AutoInitGPIO(GPIOB, GPIO_Mode_IPU, GPIO_Pin_7, GPIO_Speed_50MHz); break;
-                        case 3: AutoInitGPIO(GPIOB, GPIO_Mode_IPU, GPIO_Pin_8, GPIO_Speed_50MHz); break;
-                        case 4: AutoInitGPIO(GPIOB, GPIO_Mode_IPU, GPIO_Pin_9, GPIO_Speed_50MHz); break;
+                        case 1: GPIOx_Init(GPIOB, GPIO_Mode_IPU, GPIO_Pin_6, GPIO_Speed_50MHz); break;
+                        case 2: GPIOx_Init(GPIOB, GPIO_Mode_IPU, GPIO_Pin_7, GPIO_Speed_50MHz); break;
+                        case 3: GPIOx_Init(GPIOB, GPIO_Mode_IPU, GPIO_Pin_8, GPIO_Speed_50MHz); break;
+                        case 4: GPIOx_Init(GPIOB, GPIO_Mode_IPU, GPIO_Pin_9, GPIO_Speed_50MHz); break;
                     }
                 }
                 
@@ -144,17 +145,17 @@ void TIMx_Init(TIM_TypeDef *TIMx, uint16_t Period, uint16_t Prescaler, uint8_t m
                 // 配置GPIO为复用推挽输出
                 if (TIMx == TIM2) {
                     switch (channel) {
-                        case 1: AutoInitGPIO(GPIOA, GPIO_Mode_AF_PP, GPIO_Pin_0, GPIO_Speed_50MHz); break;
-                        case 2: AutoInitGPIO(GPIOA, GPIO_Mode_AF_PP, GPIO_Pin_1, GPIO_Speed_50MHz); break;
-                        case 3: AutoInitGPIO(GPIOA, GPIO_Mode_AF_PP, GPIO_Pin_2, GPIO_Speed_50MHz); break;
-                        case 4: AutoInitGPIO(GPIOA, GPIO_Mode_AF_PP, GPIO_Pin_3, GPIO_Speed_50MHz); break;
+                        case 1: GPIOx_Init(GPIOA, GPIO_Mode_AF_PP, GPIO_Pin_0, GPIO_Speed_50MHz); break;
+                        case 2: GPIOx_Init(GPIOA, GPIO_Mode_AF_PP, GPIO_Pin_1, GPIO_Speed_50MHz); break;
+                        case 3: GPIOx_Init(GPIOA, GPIO_Mode_AF_PP, GPIO_Pin_2, GPIO_Speed_50MHz); break;
+                        case 4: GPIOx_Init(GPIOA, GPIO_Mode_AF_PP, GPIO_Pin_3, GPIO_Speed_50MHz); break;
                     }
                 } else if (TIMx == TIM3) {
                     switch (channel) {
-                        case 1: AutoInitGPIO(GPIOA, GPIO_Mode_AF_PP, GPIO_Pin_6, GPIO_Speed_50MHz); break;
-                        case 2: AutoInitGPIO(GPIOA, GPIO_Mode_AF_PP, GPIO_Pin_7, GPIO_Speed_50MHz); break;
-                        case 3: AutoInitGPIO(GPIOB, GPIO_Mode_AF_PP, GPIO_Pin_0, GPIO_Speed_50MHz); break;
-                        case 4: AutoInitGPIO(GPIOB, GPIO_Mode_AF_PP, GPIO_Pin_1, GPIO_Speed_50MHz); break;
+                        case 1: GPIOx_Init(GPIOA, GPIO_Mode_AF_PP, GPIO_Pin_6, GPIO_Speed_50MHz); break;
+                        case 2: GPIOx_Init(GPIOA, GPIO_Mode_AF_PP, GPIO_Pin_7, GPIO_Speed_50MHz); break;
+                        case 3: GPIOx_Init(GPIOB, GPIO_Mode_AF_PP, GPIO_Pin_0, GPIO_Speed_50MHz); break;
+                        case 4: GPIOx_Init(GPIOB, GPIO_Mode_AF_PP, GPIO_Pin_1, GPIO_Speed_50MHz); break;
                     }
                 }
                 
@@ -184,14 +185,14 @@ void TIMx_Init(TIM_TypeDef *TIMx, uint16_t Period, uint16_t Prescaler, uint8_t m
             {
                 // 配置编码器GPIO引脚
                 if (TIMx == TIM2) {
-                    AutoInitGPIO(GPIOA, GPIO_Mode_IPU, GPIO_Pin_0, GPIO_Speed_50MHz);  // TIM2_CH1
-                    AutoInitGPIO(GPIOA, GPIO_Mode_IPU, GPIO_Pin_1, GPIO_Speed_50MHz);  // TIM2_CH2
+                    GPIOx_Init(GPIOA, GPIO_Mode_IPU, GPIO_Pin_0, GPIO_Speed_50MHz);  // TIM2_CH1
+                    GPIOx_Init(GPIOA, GPIO_Mode_IPU, GPIO_Pin_1, GPIO_Speed_50MHz);  // TIM2_CH2
                 } else if (TIMx == TIM3) {
-                    AutoInitGPIO(GPIOA, GPIO_Mode_IPU, GPIO_Pin_6, GPIO_Speed_50MHz);  // TIM3_CH1
-                    AutoInitGPIO(GPIOA, GPIO_Mode_IPU, GPIO_Pin_7, GPIO_Speed_50MHz);  // TIM3_CH2
+                    GPIOx_Init(GPIOA, GPIO_Mode_IPU, GPIO_Pin_6, GPIO_Speed_50MHz);  // TIM3_CH1
+                    GPIOx_Init(GPIOA, GPIO_Mode_IPU, GPIO_Pin_7, GPIO_Speed_50MHz);  // TIM3_CH2
                 } else if (TIMx == TIM4) {
-                    AutoInitGPIO(GPIOB, GPIO_Mode_IPU, GPIO_Pin_6, GPIO_Speed_50MHz);  // TIM4_CH1
-                    AutoInitGPIO(GPIOB, GPIO_Mode_IPU, GPIO_Pin_7, GPIO_Speed_50MHz);  // TIM4_CH2
+                    GPIOx_Init(GPIOB, GPIO_Mode_IPU, GPIO_Pin_6, GPIO_Speed_50MHz);  // TIM4_CH1
+                    GPIOx_Init(GPIOB, GPIO_Mode_IPU, GPIO_Pin_7, GPIO_Speed_50MHz);  // TIM4_CH2
                 }
                 
                 // 配置通道1为输入捕获
@@ -296,6 +297,42 @@ void Set_OC_value(TIM_TypeDef *TIMx, uint8_t channel, int CCR_value)
                                        中断服务函数
    ============================================================================================== */
 
+MotorTypeDef LEFT_MOTOR = {
+    TIM2,
+    0,
+    0,
+    0,
+    0,
+}
+,RIGHT_MOTOR = {
+    TIM3,
+    0,
+    0,
+    0,
+    0,
+};
+
+PIDTypeDef LEFT_PID = {
+    1,                // 比例系数
+    1,                   // 积分系数  
+    1,                   // 微分系数
+    5,                // 积分限幅
+    0,                    // 积分项累计值
+    1000,          // 输出限幅
+    0,             // 当前误差
+    0,           // 上一次误差
+}, RIGHT_PID = {
+    1,                // 比例系数
+    1,                   // 积分系数  
+    1,                   // 微分系数
+    5,                // 积分限幅
+    0,                    // 积分项累计值
+    1000,          // 输出限幅
+    0,             // 当前误差
+    0,   
+};
+
+int Freq_Counter = 0;
 /**
  * @brief TIM2中断服务函数
  * @note 需要根据实际应用添加具体的中断处理逻辑
@@ -303,9 +340,21 @@ void Set_OC_value(TIM_TypeDef *TIMx, uint8_t channel, int CCR_value)
 void TIM2_IRQHandler(void)
 {
     if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET) {
-        // 添加定时中断处理逻辑
-        // 例如：定时任务、状态更新等
+        Button_Check(GPIOB, GPIO_Pin_1, MENU_TEMP_BOOT);  
+        Button_Check(GPIOB, GPIO_Pin_11, MENU_TEMP_SPEED);
         
+        Freq_Counter++;
+        if(Freq_Counter >= 10){
+            Cal_Current_Speed(&LEFT_MOTOR);
+            Cal_Current_Speed(&RIGHT_MOTOR);
+            float Output_left = PID_Control(&LEFT_MOTOR, &LEFT_PID);
+            float Output_right = PID_Control(&RIGHT_MOTOR, &RIGHT_PID);
+            Set_Motor_Speed(1, LEFT_MOTOR.Target_Speed + Output_left);
+            Set_Motor_Speed(0, RIGHT_MOTOR.Target_Speed + Output_right);
+
+            TRACK();
+            Freq_Counter = 0;
+        }
         // 清除中断标志位
         TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
     }
