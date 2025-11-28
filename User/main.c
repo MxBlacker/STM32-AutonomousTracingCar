@@ -25,18 +25,13 @@ int main(void){
     GPIOx_Init(GPIOB, GPIO_Mode_Out_PP, GPIO_Pin_15, GPIO_Speed_50MHz);
 
     //TIM2_OC初始化，驱动左右轮电机
-    TIMx_Init(TIM2, 1000, 720, OC_MODE, 1); // 到时候就是0~1000的速度范围
-    TIMx_Init(TIM2, 1000, 720, OC_MODE, 2);
-    GPIOx_Init(GPIOA, GPIO_Mode_Out_PP, GPIO_Pin_1, GPIO_Speed_50MHz);
-    GPIOx_Init(GPIOA, GPIO_Mode_Out_PP, GPIO_Pin_3, GPIO_Speed_50MHz);
+    TIMx_Init(TIM2, 1000, 720, OC_MODE, 3); // 到时候就是0~1000的速度范围
+    TIMx_Init(TIM2, 1000, 720, OC_MODE, 4);
+    TIMx_Init(TIM2, 1000 , 72 , INTERRUPT_MODE , 0);
 
     //TIM3,TIM4 Encoder初始化，读取左右轮电机PID
-    TIMx_Init(TIM3, 65535, 1, ENCODER_MODE, 1);
-    TIMx_Init(TIM4, 65535, 1, ENCODER_MODE, 1);
-    GPIOx_Init(GPIOA,  GPIO_Mode_IPU, GPIO_Pin_6, GPIO_Speed_50MHz);
-    GPIOx_Init(GPIOA,  GPIO_Mode_IPU, GPIO_Pin_7, GPIO_Speed_50MHz);
-    GPIOx_Init(GPIOB,  GPIO_Mode_IPU, GPIO_Pin_6, GPIO_Speed_50MHz);
-    GPIOx_Init(GPIOB,  GPIO_Mode_IPU, GPIO_Pin_7, GPIO_Speed_50MHz);
+    TIMx_Init(TIM3, 65535, 1, ENCODER_MODE, 0);
+    TIMx_Init(TIM4, 65535, 1, ENCODER_MODE, 0);
 
     //按钮口初始化
     GPIOx_Init(GPIOB,  GPIO_Mode_IPU, GPIO_Pin_1, GPIO_Speed_50MHz);
@@ -49,6 +44,8 @@ int main(void){
     GPIOx_Init(GPIOA,  GPIO_Mode_IPU, GPIO_Pin_11, GPIO_Speed_50MHz);
     GPIOx_Init(GPIOA,  GPIO_Mode_IPU, GPIO_Pin_12, GPIO_Speed_50MHz);
 
+    GPIO_SetBits(GPIOB, GPIO_Pin_11);
+    GPIO_SetBits(GPIOB, GPIO_Pin_1);
     while(1){
 
     }

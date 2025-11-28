@@ -2,6 +2,7 @@
 #include "Sensor.h"
 #include "Motor.h"
 #include "Menu.h"
+#include "OLED.h"
 
 enum COLOR{
     BLACK,
@@ -10,10 +11,8 @@ enum COLOR{
 
 void TRACK(void){
 
-    int boot_state = get_value(MENU_MAIN, 0);
-    if(boot_state == 0) return;
+    int Speed_tier = get_value(MENU_MAIN, 2);
 
-    int Speed_tier = (float)get_value(MENU_MAIN, 1);
     float Speed = Speed_tier * 80.0f;
 
     if(OUT_1 == WHITE && OUT_2 == WHITE && OUT_3 == BLACK && OUT_4 == WHITE && OUT_5 == WHITE){         //直行
@@ -38,5 +37,9 @@ void TRACK(void){
         Set_Car_Speed(0, Speed * 1.6);
     }else if(OUT_1 == BLACK && OUT_2 == BLACK && OUT_3 == BLACK && OUT_4 == BLACK && OUT_5 == BLACK){   //十字路口
         Set_Car_Speed(Speed, Speed);
+    }else{
+        Set_Car_Speed(Speed, Speed);
     }
+
+    OLED_ShowNum(4,14,Speed_tier,1);
 }

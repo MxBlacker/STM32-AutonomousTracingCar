@@ -22,8 +22,6 @@ enum option_mode {
  */
 enum interface_id {
     MENU_MAIN,      // 0 - 主菜单
-    MENU_SPEED,     // 1 - SPEED
-    MENU_PID,       // 2 - PID菜单
 	NONE_INTERFACE,
 };
 
@@ -77,11 +75,11 @@ typedef struct {
  */
 Interface_TypeDef interface[100] = {
     [0] = {    // 主菜单界面
-        .option_count = 2,
-        .option_text = {"Boot", "Speed", "", ""},
-        .option_mode = {EDITABLE, EDITABLE, NONE_MODE, NONE_MODE},
-        .option_value = {0, 0, -1, -1},
-        .value_range = {1, 9, -1, -1},
+        .option_count = 3,
+        .option_text = {"", "Boot", "Speed", ""},
+        .option_mode = {NONE_MODE, PURE_TEXT, EDITABLE, NONE_MODE},
+        .option_value = {-1, 0, 0, -1},
+        .value_range = {0, 2, 9, -1},
         .value_mode = INTEGER,
         .value_length = 1,
         .super_interface = MENU_MAIN,
@@ -282,19 +280,25 @@ void confirm(void) {
 
 
 /**
- * @brief 返回操作
- * @note 退出编辑模式或返回上级菜单
+ * @brief 
+ * @note 
  */
 void temp_boot_switch(void){
-    interface[current_interface].option_value[0] = (interface[current_interface].option_value[0] + 1) % interface[current_interface].value_range[0];
+    interface[current_interface].option_value[1] += 1;
+    if(interface[current_interface].option_value[1] == 2) interface[current_interface].option_value[1] = 0;
+	show_interface();
+	OLED_ShowChar(4,1,'r');
 }
 
 /**
- * @brief 返回操作
- * @note 退出编辑模式或返回上级菜单
+ * @brief 
+ * @note 
  */
 void temp_speed_switch(void){
-    interface[current_interface].option_value[1] = (interface[current_interface].option_value[0] + 1) % interface[current_interface].value_range[1];
+    interface[current_interface].option_value[2] += 1;
+    if(interface[current_interface].option_value[2] == 9) interface[current_interface].option_value[2] = 0;
+	show_interface();
+	OLED_ShowChar(4,1,'s');
 }
 
 /**

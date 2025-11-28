@@ -5,6 +5,7 @@
 #include "Serial.h"
 #include "OLED.h"
 #include "Sensor.h"
+#include "Menu.h"
 
 /* ==============================================================================================
                                        枚举类型定义
@@ -122,9 +123,8 @@ void TIMx_Init(TIM_TypeDef *TIMx, uint16_t Period, uint16_t Prescaler, uint8_t m
                 TIM_ICInit(TIMx, &TIM_ICInitStructure);
                 
                 // 使能捕获中断
-                TIM_ITConfig(TIMx, (channel == 1) ? TIM_IT_CC1 : 
-                                   (channel == 2) ? TIM_IT_CC2 : 
-                                   (channel == 3) ? TIM_IT_CC3 : TIM_IT_CC4, ENABLE);
+				TIM_ClearITPendingBit(TIMx, TIM_IT_Update);
+                TIM_ITConfig(TIMx, TIM_IT_Update, ENABLE);
                 
                 // 配置NVIC中断
                 IRQn_Type IRQn;
@@ -176,6 +176,18 @@ void TIMx_Init(TIM_TypeDef *TIMx, uint16_t Period, uint16_t Prescaler, uint8_t m
                     case 4: TIM_OC4Init(TIMx, &TIM_OCInitStructure); break;
                 }
             }
+            // 使能捕获中断
+			TIM_ClearITPendingBit(TIMx, TIM_IT_Update);
+            TIM_ITConfig(TIMx, TIM_IT_Update, ENABLE);
+                
+            // 配置NVIC中断
+            IRQn_Type IRQn;
+            if (TIMx == TIM1) IRQn = TIM1_CC_IRQn;
+            else if (TIMx == TIM2) IRQn = TIM2_IRQn;
+            else if (TIMx == TIM3) IRQn = TIM3_IRQn;
+            else if (TIMx == TIM4) IRQn = TIM4_IRQn;
+                
+            AutoInitNVIC(NVIC_PriorityGroup_2, IRQn, 1, 1);
             break;
             
         case ENCODER_MODE:
@@ -298,14 +310,14 @@ void Set_OC_value(TIM_TypeDef *TIMx, uint8_t channel, int CCR_value)
    ============================================================================================== */
 
 MotorTypeDef LEFT_MOTOR = {
-    TIM2,
+    TIM3,
     0,
     0,
     0,
     0,
 }
 ,RIGHT_MOTOR = {
-    TIM3,
+    TIM4,
     0,
     0,
     0,
@@ -337,23 +349,43 @@ int Freq_Counter = 0;
  * @brief TIM2中断服务函数
  * @note 需要根据实际应用添加具体的中断处理逻辑
  */
+int PrevState[2], CurState[2];
 void TIM2_IRQHandler(void)
 {
     if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET) {
-        Button_Check(GPIOB, GPIO_Pin_1, MENU_TEMP_BOOT);  
-        Button_Check(GPIOB, GPIO_Pin_11, MENU_TEMP_SPEED);
-        
-        Freq_Counter++;
+		Freq_Counter++;
         if(Freq_Counter >= 10){
-            Cal_Current_Speed(&LEFT_MOTOR);
-            Cal_Current_Speed(&RIGHT_MOTOR);
-            float Output_left = PID_Control(&LEFT_MOTOR, &LEFT_PID);
-            float Output_right = PID_Control(&RIGHT_MOTOR, &RIGHT_PID);
-            Set_Motor_Speed(1, LEFT_MOTOR.Target_Speed + Output_left);
-            Set_Motor_Speed(0, RIGHT_MOTOR.Target_Speed + Output_right);
+			Freq_Counter = 0;
+			if(get_value(MENU_MAIN, 2)){
+                Cal_Current_Speed(&LEFT_MOTOR);
+                Cal_Current_Speed(&RIGHT_MOTOR);
+                float Output_left = PID_Control(&LEFT_MOTOR, &LEFT_PID);
+                float Output_right = PID_Control(&RIGHT_MOTOR, &RIGHT_PID);
+                Set_Motor_Speed(1, LEFT_MOTOR.Target_Speed + Output_left);
+                Set_Motor_Speed(0, RIGHT_MOTOR.Target_Speed + Output_right);
+                
+                OLED_ShowNum(1,5,(int)LEFT_MOTOR.Cur_Speed,3);
+                OLED_ShowNum(1,9,(int)RIGHT_MOTOR.Cur_Speed,3);
 
-            TRACK();
-            Freq_Counter = 0;
+                OLED_ShowNum(4,5,LEFT_MOTOR.Target_Speed,3);
+                OLED_ShowNum(4,9,RIGHT_MOTOR.Target_Speed,3);
+
+                TRACK();
+                OLED_ShowString(4,3,"rr");
+            }else{
+                Set_Motor_Speed(1, 0);
+                Set_Motor_Speed(0, 0);
+                OLED_ShowString(4,3,"ur");
+            }
+			//状态读取和转移
+			PrevState[0] = CurState[0];
+			CurState[0] = GPIO_ReadInputDataBit(GPIOB , GPIO_Pin_11);
+		
+			//状态判断：按钮松开
+			if(PrevState[0] == RESET && CurState[0] == SET){
+				temp_speed_switch();
+			}
+
         }
         // 清除中断标志位
         TIM_ClearITPendingBit(TIM2, TIM_IT_Update);

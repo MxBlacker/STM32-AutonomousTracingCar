@@ -38,8 +38,8 @@ typedef struct {
 #define RIGHT_MOTOR_DIR2_PIN    GPIO_Pin_15    // 右电机方向引脚2
 
 // 电机PWM输出通道定义
-#define LEFT_MOTOR_PWM_CHANNEL  3              // 左电机PWM通道(TIM2_CH3)
-#define RIGHT_MOTOR_PWM_CHANNEL 4              // 右电机PWM通道(TIM2_CH4)
+#define LEFT_MOTOR_PWM_CHANNEL  3              // 左电机PWM通道(TIM2_CH1)
+#define RIGHT_MOTOR_PWM_CHANNEL 4              // 右电机PWM通道(TIM2_CH2)
 
 /** 
  * @brief 获取电机编码器计数值

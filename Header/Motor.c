@@ -200,7 +200,7 @@ extern MotorTypeDef LEFT_MOTOR;
 extern MotorTypeDef RIGHT_MOTOR;
 void Set_Car_Speed(float Speed_1, float Speed_2){
     Motor_Set_Target_Speed(&LEFT_MOTOR, Speed_1);
-    Motor_Set_Target_Speed(&RIGHT_MOTOR, Speed_2);
+    Motor_Set_Target_Speed(&RIGHT_MOTOR, -Speed_2);
 }
 
 // ==============================================================================================
